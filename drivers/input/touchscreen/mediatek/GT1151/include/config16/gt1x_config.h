@@ -21,6 +21,8 @@
 
 #ifndef _GT1X_CONFIG_H_
 #define _GT1X_CONFIG_H_
+#define GTP_INT_TRIGGER 1
+#define GTP_WAKEUP_LEVEL 1
 
 /***************************PART2:TODO define**********************************/
 /* TODO: puts the config info corresponded to your TP here, the following is

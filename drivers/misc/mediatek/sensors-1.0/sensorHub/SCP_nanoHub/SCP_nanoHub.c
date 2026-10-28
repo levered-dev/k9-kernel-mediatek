@@ -56,6 +56,13 @@
  * HEAD
  */
 #define SENSOR_IPI_SIZE 48
+
+/*
+ * The MT6765 SCP firmware advertises its fixed transport slot as 64 bytes,
+ * although the SensorHub ABI payload remains 48 bytes.
+ */
+#define SENSOR_IPI_TRANSPORT_SIZE 64
+
 /*
  * experience number for delay_count per DELAY_COUNT sensor input delay 10ms
  * msleep(10) system will schedule to hal process then read input node
@@ -733,7 +740,15 @@ static void SCP_sensorHub_IPI_handler(int id,
 	SCP_SENSOR_HUB_DATA_P rsp = (SCP_SENSOR_HUB_DATA_P) data;
 	const struct SCP_sensorHub_Cmd *cmd;
 
-	if (len > SENSOR_IPI_SIZE) {
+	/*
+	 * Some MT6765 SCP firmware reports the complete 64-byte transport
+	 * slot instead of the 48-byte SensorHub payload.  Clamp only that
+	 * known padded size before dispatch, keeping all RX copies bounded
+	 * by SENSOR_IPI_SIZE.
+	 */
+	if (len == SENSOR_IPI_TRANSPORT_SIZE)
+		len = SENSOR_IPI_SIZE;
+	else if (len > SENSOR_IPI_SIZE) {
 		pr_err("SCP_sensorHub_IPI_handler len=%d error\n", len);
 		return;
 	}

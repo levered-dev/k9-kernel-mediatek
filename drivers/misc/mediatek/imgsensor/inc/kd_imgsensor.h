@@ -156,6 +156,10 @@
 #define IMX073_SENSOR_ID                        0x0046
 #define IMX058_SENSOR_ID                        0x0058
 /*OV*/
+/* Oukitel K9 recovered camera sensors */
+#define IMX298_SENSOR_ID                        0x0298
+#define GC8034_SENSOR_ID                        0x8044
+
 #define OV23850_SENSOR_ID                       0x023850
 #define OV16880_SENSOR_ID                       0x016880
 #define OV16825MIPI_SENSOR_ID                   0x016820
@@ -367,6 +371,10 @@
 #define SENSOR_DRVNAME_IMX091_MIPI_RAW          "imx091_mipi_raw"
 #define SENSOR_DRVNAME_IMX073_MIPI_RAW          "imx073_mipi_raw"
 /*OV*/
+/* Oukitel K9 recovered camera sensor names */
+#define SENSOR_DRVNAME_IMX298_MIPI_RAW          "imx298_mipi_raw"
+#define SENSOR_DRVNAME_GC8034_MIPI_RAW          "gc8034_mipi_raw"
+
 #define SENSOR_DRVNAME_OV23850_MIPI_RAW         "ov23850_mipi_raw"
 #define SENSOR_DRVNAME_OV16880_MIPI_RAW         "ov16880_mipi_raw"
 #define SENSOR_DRVNAME_OV16885_MIPI_RAW         "ov16885_mipi_raw"

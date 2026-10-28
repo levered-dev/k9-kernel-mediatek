@@ -52,7 +52,9 @@ static int tpd_eint_mode = 1;
 static struct task_struct *thread;
 static struct task_struct *update_thread;
 static struct task_struct *probe_thread;
+#ifdef CONFIG_GTP_AUTO_UPDATE
 static struct notifier_block pm_notifier_block;
+#endif
 static int tpd_polling_time = 50;
 static DECLARE_WAIT_QUEUE_HEAD(waiter);
 static DECLARE_WAIT_QUEUE_HEAD(pm_waiter);
@@ -565,7 +567,7 @@ void gt1x_auto_update_done(void)
 	tpd_pm_flag = 1;
 	wake_up(&pm_waiter);
 }
-#if CONFIG_GTP_AUTO_UPDATE
+#ifdef CONFIG_GTP_AUTO_UPDATE
 int gt1x_pm_notifier(struct notifier_block *nb, unsigned long val, void *ign)
 {
 	switch (val) {
@@ -641,9 +643,11 @@ static int tpd_registration(void *client)
 		err = PTR_ERR(update_thread);
 		GTP_INFO(" failed to create auto-update thread: %d\n", err);
 	}
+#ifdef CONFIG_GTP_AUTO_UPDATE
 	pm_notifier_block.notifier_call = gt1x_pm_notifier;
 	pm_notifier_block.priority = 0;
 	register_pm_notifier(&pm_notifier_block);
+#endif
 #ifdef CONFIG_MTK_LENS
 	AF_PowerDown();
 #endif

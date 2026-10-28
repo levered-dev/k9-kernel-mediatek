@@ -53,6 +53,7 @@
 #include <linux/delay.h>
 #include <linux/of.h>
 #include <linux/of_fdt.h>
+#include <linux/of_gpio.h>
 
 #if 1
 struct pinctrl *pinctrlaud;
@@ -151,6 +152,7 @@ static struct audio_gpio_attr aud_gpios[GPIO_NUM] = {
 #endif
 
 static unsigned int extbuck_fan53526_exist;
+static int extamp_gpio = -EINVAL;
 
 static DEFINE_MUTEX(gpio_request_mutex);
 
@@ -161,6 +163,26 @@ void AudDrv_GPIO_probe(void *dev)
 	int i = 0;
 
 	pr_debug("%s\n", __func__);
+
+	/*
+	 * Some MT6765 device trees use the legacy gpio-extamp property instead
+	 * of the extamp-pullhigh/extamp-pulllow pinctrl states. Keep pinctrl as
+	 * the preferred path, but prepare the legacy GPIO as a fallback.
+	 */
+	extamp_gpio = of_get_named_gpio(((struct device *)dev)->of_node,
+					 "gpio-extamp", 0);
+	if (gpio_is_valid(extamp_gpio)) {
+		ret = devm_gpio_request_one(dev, extamp_gpio,
+					    GPIOF_OUT_INIT_LOW, "audio-extamp");
+		if (ret) {
+			pr_err("%s request gpio-extamp %d fail %d\n",
+			       __func__, extamp_gpio, ret);
+			extamp_gpio = -EINVAL;
+		} else {
+			pr_info("%s using legacy gpio-extamp %d\n",
+				__func__, extamp_gpio);
+		}
+	}
 
 	pinctrlaud = devm_pinctrl_get(dev);
 	if (IS_ERR(pinctrlaud)) {
@@ -511,6 +533,13 @@ int AudDrv_GPIO_EXTAMP_Select(int bEnable, int mode)
 					pr_info("could not set aud_gpios[GPIO_EXTAMP_HIGH] pins\n");
 				udelay(2);
 			}
+		} else if (gpio_is_valid(extamp_gpio)) {
+			for (i = 0; i < extamp_mode; i++) {
+				gpio_set_value(extamp_gpio, 0);
+				udelay(2);
+				gpio_set_value(extamp_gpio, 1);
+				udelay(2);
+			}
 		}
 	} else {
 		if (aud_gpios[GPIO_EXTAMP_LOW].gpio_prepare) {
@@ -519,6 +548,8 @@ int AudDrv_GPIO_EXTAMP_Select(int bEnable, int mode)
 				aud_gpios[GPIO_EXTAMP_LOW].gpioctrl);
 			if (retval)
 				pr_info("could not set aud_gpios[GPIO_EXTAMP_LOW] pins\n");
+		} else if (gpio_is_valid(extamp_gpio)) {
+			gpio_set_value(extamp_gpio, 0);
 		}
 	}
 	mutex_unlock(&gpio_request_mutex);

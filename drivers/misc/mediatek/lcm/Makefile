@@ -1,3 +1,4 @@
+# obj-y += hct_ili7807d_dsi_vdo_fhdplus_auto_72_hz/
 #
 # Copyright (C) 2015 MediaTek Inc.
 #
